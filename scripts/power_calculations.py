@@ -30,6 +30,8 @@ def power(n, majority_share, beta_0_maj, beta_0_min, pclick_with_alg, treated_sh
 
 def mde(n, tau_maj, pclick_with_alg, treated_share, majority_share, required_power):
     for el in np.linspace(0, 0.2, 21):
+        if el > pclick_with_alg:
+            continue
         tau_min_marginal = el
         beta_0_maj = pclick_with_alg - tau_maj
         beta_0_min = pclick_with_alg - tau_maj - tau_min_marginal
@@ -37,21 +39,22 @@ def mde(n, tau_maj, pclick_with_alg, treated_share, majority_share, required_pow
                   pclick_with_alg=pclick_with_alg, treated_share=treated_share)
         if p > required_power:
             return el
-    return 0.1
+    return np.nan
 
 
 def main():
     treated_share = 0.5
 
-    pclick_with_alg = 0.3
+    pclick_with_algs = [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 0.95]
+    pclick_with_algs = [0.3]
     tau_maj = 0.02
     majority_share = 0.7
     # power(n, majority_share, beta_0_maj, beta_0_min, pclick_with_alg, treated_share=treated_share)
 
-    mdes = pd.DataFrame(index=np.linspace(1000, 10000, 10), columns=['mde'])
+    mdes = pd.DataFrame(index=np.linspace(1000, 10000, 10), columns=pclick_with_algs)
     for n in tqdm.tqdm(mdes.index):
-        mdes.loc[n, 'mde'] = mde(n, tau_maj, pclick_with_alg, treated_share, majority_share=majority_share, required_power=0.8)
-        print(mdes)
+        for pclick_with_alg in pclick_with_algs:
+            mdes.loc[n, pclick_with_alg] = mde(n, tau_maj, pclick_with_alg, treated_share, majority_share=majority_share, required_power=0.8)
     fig, ax = plt.subplots()
     mdes.plot(ax=ax)
     plt.xlabel('Number of subjects')
